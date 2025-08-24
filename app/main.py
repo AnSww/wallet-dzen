@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from core.models import Base, db_helper
+from app.api.v1.routers.auth import router as auth_router
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db import Base, db_helper
 import uvicorn
 from core.config import settings
-
-from api import router
 
 
 @asynccontextmanager
@@ -17,7 +18,7 @@ async def lifespan(app: FastAPI):
 
 
 main_app = FastAPI(lifespan=lifespan)
-main_app.include_router(router, prefix=settings.api.prefix)
+main_app.include_router(auth_router)
 
 
 if __name__ == "__main__":
