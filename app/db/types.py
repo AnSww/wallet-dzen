@@ -12,3 +12,7 @@ class AccountType(str, Enum):
 class CategoryKind(str, Enum):
     expense = "expense"
     income = "income"
+
+class Direction(str, Enum):
+    incoming = "in"
+    outgoing = "out"

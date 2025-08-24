@@ -14,3 +14,4 @@ class Category(Base):
 
     user: Mapped["User"] = relationship(back_populates="categories")
     parent: Mapped["Category | None"] = relationship(remote_side="Category.id")
+    transactions: Mapped[list["Transaction"]] = relationship(back_populates="category")
