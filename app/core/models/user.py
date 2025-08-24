@@ -8,8 +8,16 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(length=255))
     name: Mapped[str] = mapped_column(String(length=120))
-    role: Mapped[Role] = mapped_column(Enum(Role, name="role", create_type=False), default=Role.user)
+    role: Mapped[Role] = mapped_column(
+        Enum(Role, name="role", create_type=False), default=Role.user
+    )
 
-    accounts: Mapped[list["Account"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    categories: Mapped[list["Category"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    accounts: Mapped[list["Account"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    categories: Mapped[list["Category"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    transactions: Mapped[list["Transaction"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )

@@ -6,10 +6,16 @@ from app.db.types import CategoryKind
 
 
 class Category(Base):
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"), index=True
+    )
     name: Mapped[str] = mapped_column(String(100))
-    kind: Mapped[CategoryKind] = mapped_column(Enum(CategoryKind, name="category_kind", create_type=False))
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
+    kind: Mapped[CategoryKind] = mapped_column(
+        Enum(CategoryKind, name="category_kind", create_type=False)
+    )
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("category.id", ondelete="SET NULL"), nullable=True
+    )
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     user: Mapped["User"] = relationship(back_populates="categories")
