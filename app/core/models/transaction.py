@@ -9,9 +9,9 @@ from app.db.types import Direction
 
 
 class Transaction(Base):
-    user_id = Mapped[str] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), index=True)
-    account_id: Mapped[str] = mapped_column(ForeignKey("account.id", ondelete="CASCADE"), index=True)
-    category_id: Mapped[str] = mapped_column(ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
+    user_id = Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("account.id", ondelete="CASCADE"), index=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
 
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     direction: Enum = mapped_column(Enum(Direction, name="direction"), create_type=False)
