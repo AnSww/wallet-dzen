@@ -23,9 +23,9 @@ class Transfer(UserRelationMixin, Base):
 
     occurred_at: Mapped[datetime]
 
-    from_account: Mapped["Accounts"] = relationship(
+    from_account: Mapped["Account"] = relationship(
         foreign_keys=[from_account_id], back_populates="outgoing_transfers"
     )
-    to_account: Mapped["Accounts"] = relationship(
+    to_account: Mapped["Account"] = relationship(
         foreign_keys=[to_account_id], back_populates="incoming_transfers"
     )

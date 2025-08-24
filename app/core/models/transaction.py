@@ -10,7 +10,7 @@ from .mixins import UserRelationMixin
 
 
 class Transaction(UserRelationMixin, Base):
-    _user_back_populates = "accounts"
+    _user_back_populates = "transactions"
 
     account_id: Mapped[int] = mapped_column(
         ForeignKey("accounts.id", ondelete="CASCADE"), index=True
@@ -27,5 +27,5 @@ class Transaction(UserRelationMixin, Base):
 
     occurred_at: Mapped[datetime] = mapped_column()  # клиент задаёт время операции
 
-    account: Mapped["Accounts"] = relationship(back_populates="transactions")
-    category: Mapped["Categories | None"] = relationship(back_populates="transactions")
+    account: Mapped["Account"] = relationship(back_populates="transactions")
+    category: Mapped["Category | None"] = relationship(back_populates="transactions")

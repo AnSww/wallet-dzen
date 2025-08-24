@@ -20,3 +20,9 @@ class Account(UserRelationMixin, Base):
     transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
+    outgoing_transfers: Mapped[list["Transfer"]] = relationship(
+        back_populates="from_account", foreign_keys="Transfer.from_account_id", cascade="all, delete-orphan"
+    )
+    incoming_transfers: Mapped[list["Transfer"]] = relationship(
+        back_populates="to_account", foreign_keys="Transfer.to_account_id", cascade="all, delete-orphan"
+    )
