@@ -1,5 +1,5 @@
 from sqlalchemy import String, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.db.types import Role
 
@@ -9,3 +9,5 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(length=255))
     name: Mapped[str] = mapped_column(String(length=120))
     role: Mapped[Role] = mapped_column(Enum(Role, name="role", create_type=False), default=Role.user)
+
+    accounts: Mapped[list["Account"]] = relationship(back_populates="user", cascade="all, delete-orphan")
