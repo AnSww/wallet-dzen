@@ -16,7 +16,6 @@ class Transfer(Base):
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     occurred_at: Mapped[datetime]
-    created_at: Mapped[datetime] = mapped_column(server_default=text("CURRENT_TIMESTAMP"))
 
     user: Mapped["User"] = relationship(back_populates="transfers")
     from_account: Mapped["Account"] = relationship(foreign_keys=[from_account_id], back_populates="outgoing_transfers")
