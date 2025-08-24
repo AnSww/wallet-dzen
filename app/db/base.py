@@ -16,6 +16,14 @@ convention = {
 metadata = MetaData(naming_convention=convention)
 
 
+def pluralize(name: str) -> str:
+    if name.endswith(("s", "x", "z")) or name.endswith(("ch", "sh")):
+        return name + "es"
+    if name.endswith("y") and name[-2] not in "aeiou":
+        return name[:-1] + "ies"
+    return name + "s"
+
+
 class Base(DeclarativeBase):
     __abstract__ = True
     metadata = metadata
@@ -27,4 +35,4 @@ class Base(DeclarativeBase):
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
-        return f"{camel_case_to_snake_case(cls.__name__)}s"
+        return pluralize(camel_case_to_snake_case(cls.__name__))

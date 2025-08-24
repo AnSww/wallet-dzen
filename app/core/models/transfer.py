@@ -12,10 +12,10 @@ class Transfer(UserRelationMixin, Base):
     _user_back_populates = "transfers"
 
     from_account_id: Mapped[int] = mapped_column(
-        ForeignKey("account.id", ondelete="CASCADE")
+        ForeignKey("accounts.id", ondelete="CASCADE")
     )
     to_account_id: Mapped[int] = mapped_column(
-        ForeignKey("account.id", ondelete="CASCADE")
+        ForeignKey("accounts.id", ondelete="CASCADE")
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     fee_amount: Mapped[Decimal | None] = mapped_column(Numeric(14, 2), nullable=True)
@@ -23,9 +23,9 @@ class Transfer(UserRelationMixin, Base):
 
     occurred_at: Mapped[datetime]
 
-    from_account: Mapped["Account"] = relationship(
+    from_account: Mapped["Accounts"] = relationship(
         foreign_keys=[from_account_id], back_populates="outgoing_transfers"
     )
-    to_account: Mapped["Account"] = relationship(
+    to_account: Mapped["Accounts"] = relationship(
         foreign_keys=[to_account_id], back_populates="incoming_transfers"
     )

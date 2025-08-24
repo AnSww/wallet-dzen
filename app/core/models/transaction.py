@@ -13,19 +13,19 @@ class Transaction(UserRelationMixin, Base):
     _user_back_populates = "accounts"
 
     account_id: Mapped[int] = mapped_column(
-        ForeignKey("account.id", ondelete="CASCADE"), index=True
+        ForeignKey("accounts.id", ondelete="CASCADE"), index=True
     )
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("category.id", ondelete="SET NULL"), nullable=True
+        ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )
 
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
-    direction: Enum = mapped_column(
-        Enum(Direction, name="direction"), create_type=False
+    direction: Mapped[Direction] = mapped_column(
+        Enum(Direction, name="direction", create_type=False)
     )
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     occurred_at: Mapped[datetime] = mapped_column()  # клиент задаёт время операции
 
-    account: Mapped["Account"] = relationship(back_populates="transactions")
-    category: Mapped["Category | None"] = relationship(back_populates="transactions")
+    account: Mapped["Accounts"] = relationship(back_populates="transactions")
+    category: Mapped["Categories | None"] = relationship(back_populates="transactions")

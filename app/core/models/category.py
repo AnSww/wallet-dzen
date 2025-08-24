@@ -14,7 +14,7 @@ class Category(UserRelationMixin, Base):
         Enum(CategoryKind, name="category_kind", create_type=False)
     )
     parent_id: Mapped[int | None] = mapped_column(
-        ForeignKey("category.id", ondelete="SET NULL"), nullable=True
+        ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
 

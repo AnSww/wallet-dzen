@@ -15,8 +15,8 @@ class Budget(UserRelationMixin, Base):
     """Бюджет на месяц по категории расхода (planned). Факт считаем из Transaction."""
     _user_back_populates = "budgets"
 
-    category_id: Mapped[str] = mapped_column(
-        ForeignKey("category.id", ondelete="CASCADE"), index=True
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), index=True
     )
     month: Mapped[date]  # convention: первое число месяца
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))

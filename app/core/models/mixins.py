@@ -16,9 +16,8 @@ class UserRelationMixin:
     @declared_attr
     def user_id(cls) -> Mapped[int]:
         return mapped_column(
-            ForeignKey("users.id"),
+            ForeignKey("users.id", ondelete=cls._user_id_ondelete),
             unique=cls._user_id_unique,
-            ondelete=cls._user_id_ondelete,
             index=cls._user_index,
         )
 
