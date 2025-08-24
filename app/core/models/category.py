@@ -3,12 +3,12 @@ from sqlalchemy import String, Enum, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.types import CategoryKind
+from .mixins import UserRelationMixin
 
 
-class Category(Base):
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
+class Category(UserRelationMixin, Base):
+    _user_back_populates = "categories"
+
     name: Mapped[str] = mapped_column(String(100))
     kind: Mapped[CategoryKind] = mapped_column(
         Enum(CategoryKind, name="category_kind", create_type=False)
@@ -18,6 +18,5 @@ class Category(Base):
     )
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    user: Mapped["User"] = relationship(back_populates="categories")
     parent: Mapped["Category | None"] = relationship(remote_side="Category.id")
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="category")

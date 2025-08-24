@@ -5,12 +5,12 @@ from sqlalchemy import String, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from .mixins import UserRelationMixin
 
 
-class Transfer(Base):
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
+class Transfer(UserRelationMixin, Base):
+    _user_back_populates = "transfers"
+
     from_account_id: Mapped[int] = mapped_column(
         ForeignKey("account.id", ondelete="CASCADE")
     )
@@ -23,7 +23,6 @@ class Transfer(Base):
 
     occurred_at: Mapped[datetime]
 
-    user: Mapped["User"] = relationship(back_populates="transfers")
     from_account: Mapped["Account"] = relationship(
         foreign_keys=[from_account_id], back_populates="outgoing_transfers"
     )

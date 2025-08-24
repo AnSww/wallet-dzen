@@ -6,12 +6,12 @@ from sqlalchemy import String, Enum, ForeignKey, Boolean, UniqueConstraint, Nume
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.types import Direction
+from .mixins import UserRelationMixin
 
 
-class Transaction(Base):
-    user_id = Mapped[int] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
+class Transaction(UserRelationMixin, Base):
+    _user_back_populates = "accounts"
+
     account_id: Mapped[int] = mapped_column(
         ForeignKey("account.id", ondelete="CASCADE"), index=True
     )
@@ -27,6 +27,5 @@ class Transaction(Base):
 
     occurred_at: Mapped[datetime] = mapped_column()  # клиент задаёт время операции
 
-    user: Mapped["User"] = relationship(back_populates="accounts")
     account: Mapped["Account"] = relationship(back_populates="transactions")
     category: Mapped["Category | None"] = relationship(back_populates="transactions")
