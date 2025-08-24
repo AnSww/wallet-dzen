@@ -11,3 +11,4 @@ class User(Base):
     role: Mapped[Role] = mapped_column(Enum(Role, name="role", create_type=False), default=Role.user)
 
     accounts: Mapped[list["Account"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    categories: Mapped[list["Category"]] = relationship(back_populates="user", cascade="all, delete-orphan")
