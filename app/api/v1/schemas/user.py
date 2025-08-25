@@ -19,3 +19,9 @@ class UserOut(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = None
     password: str | None = Field(default=None, min_length=8)
+
+
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

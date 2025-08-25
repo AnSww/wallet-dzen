@@ -24,6 +24,14 @@ class DataConfig(BaseModel):
     pool_size: int = 50
 
 
+class AuthJWT(BaseModel):
+    private_key_path: Path = PROJECT_ROOT / "app" / "certs" / "jwt-private.pem"
+    public_key_path: Path = PROJECT_ROOT / "app" / "certs" / "jwt-public.pem"
+    algorithm: str = "RS256"
+    access_ttl_min: int = 15
+    refresh_ttl_min: int = 60 * 24 * 30
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_PATH,
@@ -35,6 +43,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     db: DataConfig
+    jwt: AuthJWT = AuthJWT()
 
 
 settings = Settings()
