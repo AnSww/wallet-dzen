@@ -22,7 +22,9 @@ class User(Base):
     transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    transfers: Mapped[list["Transfer"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    transfers: Mapped[list["Transfer"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
     budgets: Mapped[list["Budget"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )

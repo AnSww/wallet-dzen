@@ -13,6 +13,7 @@ from app.db.base import Base
 
 class Budget(UserRelationMixin, Base):
     """Бюджет на месяц по категории расхода (planned). Факт считаем из Transaction."""
+
     _user_back_populates = "budgets"
 
     category_id: Mapped[int] = mapped_column(
