@@ -1,4 +1,4 @@
-from sqlalchemy import String, ForeignKey, Enum, Boolean, Float, Numeric
+from sqlalchemy import String, ForeignKey, Enum, Boolean, Float, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from decimal import Decimal
 
@@ -29,4 +29,8 @@ class Account(UserRelationMixin, Base):
         back_populates="to_account",
         foreign_keys="Transfer.to_account_id",
         cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "name", name="uq__account__user_name"),
     )
