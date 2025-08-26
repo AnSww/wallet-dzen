@@ -11,9 +11,6 @@ from app.db.types import CategoryKind
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
-# ---------- helpers / validation ----------
-
-
 async def _ensure_parent_valid(
     repo: CategoryRepository,
     user_id: int,
@@ -32,14 +29,11 @@ async def _ensure_parent_valid(
     return parent
 
 
-# ---------- endpoints ----------
-
 
 @router.post(
     "",
     response_model=CategoryOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Создать категорию (уникальна по name+kind в рамках пользователя)",
 )
 async def create_category(
     payload: CategoryCreate,
@@ -167,7 +161,6 @@ async def update_category(
 @router.delete(
     "/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Архивировать категорию (soft delete)",
 )
 async def delete_category(
     category_id: int,
