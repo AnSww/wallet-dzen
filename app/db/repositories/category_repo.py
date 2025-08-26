@@ -9,7 +9,7 @@ class CategoryRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, user_id: int, category_id: str) -> Category | None:
+    async def get_by_id(self, user_id: int, category_id: int) -> Category | None:
         stmt = select(Category).where(
             Category.id == category_id,
             Category.user_id == user_id,
@@ -48,12 +48,9 @@ class CategoryRepository:
         if parent_id is not None:
             cond.append(Category.parent_id == parent_id)
         if search:
-            like = f"%{search.strip()}%"
-            cond.append(
-                func.unaccent(func.lower(Category.name)).like(
-                    func.unaccent(func.lower(like))
-                )
-            )
+            s = search.strip().replace("%", r"\%").replace("_", r"\_")
+            pattern = f"%{s}%"
+            cond.append(Category.name.ilike(pattern, escape="\\"))
 
         stmt = (
             select(Category)
