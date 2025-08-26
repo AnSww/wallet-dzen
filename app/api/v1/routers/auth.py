@@ -1,11 +1,9 @@
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.api.v1.schemas.user import UserCreate, UserOut, TokenPair
-from app.api.v1.depends import get_current_user, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME
+from app.api.v1.depends import get_current_user, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, get_refresh_payload
 from app.db.db_helper import get_session
 from app.db.repositories.user_repo import UserRepository
 from app.core.security import (
@@ -69,9 +67,8 @@ async def login(payload: UserCreate, response: Response, session: AsyncSession =
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    jti = str(uuid4())
     access = create_access_token(str(user.id))
-    refresh = create_refresh_token(str(user.id), jti=jti)
+    refresh = create_refresh_token(str(user.id))
 
     _set_cookie(
         response,
@@ -92,22 +89,12 @@ async def login(payload: UserCreate, response: Response, session: AsyncSession =
     return {"access_token": access, "refresh_token": refresh}
 
 @router.post("/refresh", status_code=200)
-async def refresh(request: Request, response: Response):
-    token = request.cookies.get(REFRESH_COOKIE_NAME)
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing refresh token")
+async def refresh(request: Request, response: Response, payload = Depends(get_refresh_payload)):
 
-    try:
-        payload = decode_token(token)
-        if payload.get("type") != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
-        sub = str(payload["sub"])
-        jti = payload.get("jti")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+    user_id = payload.get("user_id")
 
-    new_access = create_access_token(sub)
-    new_refresh = create_refresh_token(sub, jti=jti)  # без БД смысла ротации немного, но пусть будет...
+    new_access = create_access_token(user_id)
+    new_refresh = create_refresh_token(user_id)  # без БД смысла ротации немного, но пусть будет...
 
     _set_cookie(
         response,

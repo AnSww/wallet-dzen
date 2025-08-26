@@ -1,7 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
 
 import jwt
 from passlib.context import CryptContext
@@ -31,17 +30,15 @@ def load_public_key() -> str:
 
 
 def _create_token(
-    sub: str, *, ttl_minutes: int, token_type: str, jti: str | None = None
+    sub: str, *, ttl_minutes: int, token_type: str,
 ) -> str:
     now = datetime.now(timezone.utc)
     payload = {
-        "sub": sub,
+        "sub": str(sub),
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(minutes=ttl_minutes)).timestamp()),
         "type": token_type,
     }
-    if jti:
-        payload["jti"] = jti
     private_key = load_private_key()
     return jwt.encode(payload, private_key, algorithm=settings.jwt.algorithm)
 
@@ -52,10 +49,11 @@ def create_access_token(sub: str) -> str:
     )
 
 
-def create_refresh_token(sub: str, jti: str) -> str:
+def create_refresh_token(sub: str) -> str:
+    # тут было бы полезно ввести jti для потверждения токена через бд, но в данном проекте было принято решение не хранить токены и осоответсвующую информацию в бд, поэтому и jti ут нет
     return _create_token(
-        sub, ttl_minutes=settings.jwt.refresh_ttl_min, token_type="refresh", jti=jti
-    )
+        sub, ttl_minutes=settings.jwt.refresh_ttl_min, token_type="refresh")
+
 
 
 def decode_token(token: str) -> dict:
