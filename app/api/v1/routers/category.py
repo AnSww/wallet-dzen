@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.depends import get_current_user
+from app.api.v1.auth_depends import get_current_user
 from app.api.v1.schemas.category import CategoryOut, CategoryCreate, CategoryUpdate
 from app.core.models import Category, User
 from app.db.db_helper import get_session

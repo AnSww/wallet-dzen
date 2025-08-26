@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.schemas.account import AccountCreate, AccountOut, AccountPatch
-from app.api.v1.depends import get_db, get_current_user, get_session
+from app.api.v1.auth_depends import get_db, get_current_user, get_session
 from app.core.models import User
 from app.db.repositories.account_repo import AccountRepository
 

@@ -1,19 +1,15 @@
-from typing import Annotated
-
-from fastapi import Depends, HTTPException, status, Request, Security
+from fastapi import Depends, HTTPException, status, Request
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import (
-    OAuth2PasswordBearer,
     HTTPAuthorizationCredentials,
     HTTPBearer,
 )
 
-from app.api.v1.schemas.user import UserOut
 from app.core.security import decode_token
 
 
-from app.db import db_helper
+from app.db.db_helper import get_session
 from app.db.repositories.user_repo import UserRepository
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
@@ -21,15 +17,6 @@ from app.db.repositories.user_repo import UserRepository
 ACCESS_COOKIE_NAME = "access"
 REFRESH_COOKIE_NAME = "refresh"
 bearer_scheme = HTTPBearer(auto_error=False)
-
-
-async def get_session() -> AsyncSession:
-    async for s in db_helper.session_getter():
-        yield s
-
-
-async def get_db(session: AsyncSession = Depends(get_session)) -> AsyncSession:
-    return session
 
 
 def _unauthorized(msg: str) -> None:
