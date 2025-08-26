@@ -29,8 +29,8 @@ class AccountRepository:
         res = await self.session.execute(stmt)
         return list(res.scalars().all())
 
-    async def get_owned(self, user_id: int, account_id: int) -> Account | None:
-        stmt = select(Account).where(Account.user_id == user_id, Account.id == account_id)
+    async def get_owned(self, user_id: int, account_id: int, archived: bool = False) -> Account | None:
+        stmt = select(Account).where(Account.user_id == user_id, Account.id == account_id, Account.archived == archived)
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
@@ -41,14 +41,14 @@ class AccountRepository:
             name: str,
             currency: str,
             type_: AccountType,
-            initial_balance: Decimal | None = None,
+            initial_balance: Decimal = Decimal("0"),
     ) -> Account:
         acc = Account(
             user_id=user.id,
             name=name,
             currency=currency,
             type=type_,
-            balance=initial_balance or 0,
+            balance=initial_balance,
             archived=False,
         )
         self.session.add(acc)
@@ -71,5 +71,7 @@ class AccountRepository:
 
     async def archive(self, *, account: Account) -> None:
         if not account.archived:
+            account.name += " (archived)"
             account.archived = True
             await self.session.flush()
+            await self.session.commit()
