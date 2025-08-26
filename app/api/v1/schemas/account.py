@@ -8,7 +8,6 @@ from app.db.types import AccountType
 
 class AccountCreate(BaseModel):
     name: str = Field(..., min_length=4, max_length=16)
-
     currency: str = Field(..., pattern=r"^[A-Z]{3}$", description="ISO-4217, например: RUB, EUR")
     type: AccountType
     initial_balance: Decimal = Field(
@@ -17,16 +16,16 @@ class AccountCreate(BaseModel):
 
 class AccountPatch(BaseModel):
     name: str | None = Field(default=None, min_length=4, max_length=16)
-    archived: bool | None = None
+    archived: bool = False
 
 
 class AccountOut(BaseModel):
-    id: str
+    id: int
     name: str
     currency: str
     type: AccountType
     archived: bool
-    balance: str  # из Decimal сериализуем в строку
+    balance: Decimal
     created_at: datetime
 
     class Config:
