@@ -1,4 +1,12 @@
-from sqlalchemy import String, ForeignKey, Enum, Boolean, Float, Numeric, UniqueConstraint
+from sqlalchemy import (
+    String,
+    ForeignKey,
+    Enum,
+    Boolean,
+    Float,
+    Numeric,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from decimal import Decimal
 

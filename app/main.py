@@ -11,6 +11,7 @@ import uvicorn
 from core.config import settings
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with db_helper.engine.begin() as conn:

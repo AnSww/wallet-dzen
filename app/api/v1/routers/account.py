@@ -9,6 +9,7 @@ from app.db.repositories.account_repo import AccountRepository
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
 
+
 @router.post("", response_model=AccountOut, status_code=status.HTTP_201_CREATED)
 async def create_account(
     payload: AccountCreate,
@@ -64,7 +65,9 @@ async def get_account(
     repo = AccountRepository(session)
     acc = await repo.get_owned(user.id, account_id, archived=archived)
     if not acc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="account not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="account not found"
+        )
     return AccountOut.model_validate(acc)
 
 
@@ -78,9 +81,13 @@ async def patch_account(
     repo = AccountRepository(session)
     acc = await repo.get_owned(user.id, account_id)
     if not acc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="account not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="account not found"
+        )
 
-    updated = await repo.patch(account=acc, name=payload.name, archived=payload.archived)
+    updated = await repo.patch(
+        account=acc, name=payload.name, archived=payload.archived
+    )
     return AccountOut.model_validate(updated)
 
 
@@ -93,7 +100,9 @@ async def archive_account(
     repo = AccountRepository(session)
     acc = await repo.get_owned(user.id, account_id)
     if not acc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="account not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="account not found"
+        )
 
     await repo.archive(account=acc)
     return None

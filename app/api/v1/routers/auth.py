@@ -3,14 +3,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.api.v1.schemas.user import UserCreate, UserOut, TokenPair
-from app.api.v1.depends import get_current_user, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, get_refresh_payload
+from app.api.v1.depends import (
+    get_current_user,
+    ACCESS_COOKIE_NAME,
+    REFRESH_COOKIE_NAME,
+    get_refresh_payload,
+)
 from app.db.db_helper import get_session
 from app.db.repositories.user_repo import UserRepository
 from app.core.security import (
     hash_password,
     verify_password,
     create_access_token,
-    create_refresh_token, decode_token,
+    create_refresh_token,
+    decode_token,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -46,6 +52,7 @@ def _clear_cookie(response: Response, name: str, path: str = "/"):
         samesite=settings.cookies.samesite,
     )
 
+
 @router.post("/register", response_model=UserOut, status_code=201)
 async def register(payload: UserCreate, session: AsyncSession = Depends(get_session)):
     repo = UserRepository(session)
@@ -61,7 +68,11 @@ async def register(payload: UserCreate, session: AsyncSession = Depends(get_sess
 
 
 @router.post("/login", response_model=TokenPair)
-async def login(payload: UserCreate, response: Response, session: AsyncSession = Depends(get_session)):
+async def login(
+    payload: UserCreate,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
     repo = UserRepository(session)
     user = await repo.get_by_email(payload.email)
     if not user or not verify_password(payload.password, user.password_hash):
@@ -88,13 +99,18 @@ async def login(payload: UserCreate, response: Response, session: AsyncSession =
 
     return {"access_token": access, "refresh_token": refresh}
 
+
 @router.post("/refresh", status_code=200)
-async def refresh(request: Request, response: Response, payload = Depends(get_refresh_payload)):
+async def refresh(
+    request: Request, response: Response, payload=Depends(get_refresh_payload)
+):
 
     user_id = payload.get("user_id")
 
     new_access = create_access_token(user_id)
-    new_refresh = create_refresh_token(user_id)  # без БД смысла ротации немного, но пусть будет...
+    new_refresh = create_refresh_token(
+        user_id
+    )  # без БД смысла ротации немного, но пусть будет...
 
     _set_cookie(
         response,

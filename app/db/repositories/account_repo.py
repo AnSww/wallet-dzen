@@ -11,11 +11,11 @@ class AccountRepository:
         self.session = session
 
     async def list_for_user(
-            self,
-            user_id: int,
-            include_archived: bool = False,
-            limit: int = 100,
-            offset: int = 0,
+        self,
+        user_id: int,
+        include_archived: bool = False,
+        limit: int = 100,
+        offset: int = 0,
     ) -> list[Account]:
         stmt = (
             select(Account)
@@ -29,19 +29,25 @@ class AccountRepository:
         res = await self.session.execute(stmt)
         return list(res.scalars().all())
 
-    async def get_owned(self, user_id: int, account_id: int, archived: bool = False) -> Account | None:
-        stmt = select(Account).where(Account.user_id == user_id, Account.id == account_id, Account.archived == archived)
+    async def get_owned(
+        self, user_id: int, account_id: int, archived: bool = False
+    ) -> Account | None:
+        stmt = select(Account).where(
+            Account.user_id == user_id,
+            Account.id == account_id,
+            Account.archived == archived,
+        )
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
     async def create(
-            self,
-            *,
-            user: User,
-            name: str,
-            currency: str,
-            type_: AccountType,
-            initial_balance: Decimal = Decimal("0"),
+        self,
+        *,
+        user: User,
+        name: str,
+        currency: str,
+        type_: AccountType,
+        initial_balance: Decimal = Decimal("0"),
     ) -> Account:
         acc = Account(
             user_id=user.id,
@@ -56,11 +62,11 @@ class AccountRepository:
         return acc
 
     async def patch(
-            self,
-            *,
-            account: Account,
-            name: str | None = None,
-            archived: bool | None = None,
+        self,
+        *,
+        account: Account,
+        name: str | None = None,
+        archived: bool | None = None,
     ) -> Account:
         if name is not None:
             account.name = name

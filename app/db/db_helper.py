@@ -36,6 +36,7 @@ class DataBaseHelper:
         async with self.session_factory() as session:
             yield session
 
+
 async def get_session() -> AsyncSession:
     async for s in db_helper.session_getter():
         yield s
@@ -43,6 +44,7 @@ async def get_session() -> AsyncSession:
 
 async def get_db(session: AsyncSession = Depends(get_session)) -> AsyncSession:
     return session
+
 
 db_helper = DataBaseHelper(
     url=str(settings.db.url),

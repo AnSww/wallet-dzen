@@ -31,6 +31,7 @@ class AuthJWT(BaseModel):
     access_ttl_min: int = 120
     refresh_ttl_min: int = 120
 
+
 class CookieSettings(BaseModel):
     secure: bool = True
     samesite: str = "lax"

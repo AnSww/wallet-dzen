@@ -8,10 +8,11 @@ from app.db.types import AccountType
 
 class AccountCreate(BaseModel):
     name: str = Field(..., min_length=4, max_length=16)
-    currency: str = Field(..., pattern=r"^[A-Z]{3}$", description="ISO-4217, например: RUB, EUR")
+    currency: str = Field(
+        ..., pattern=r"^[A-Z]{3}$", description="ISO-4217, например: RUB, EUR"
+    )
     type: AccountType
-    initial_balance: Decimal = Field(
-        default=0, ge=0)
+    initial_balance: Decimal = Field(default=0, ge=0)
 
 
 class AccountPatch(BaseModel):

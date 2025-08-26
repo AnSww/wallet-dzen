@@ -30,7 +30,10 @@ def load_public_key() -> str:
 
 
 def _create_token(
-    sub: str, *, ttl_minutes: int, token_type: str,
+    sub: str,
+    *,
+    ttl_minutes: int,
+    token_type: str,
 ) -> str:
     now = datetime.now(timezone.utc)
     payload = {
@@ -52,8 +55,8 @@ def create_access_token(sub: str) -> str:
 def create_refresh_token(sub: str) -> str:
     # тут было бы полезно ввести jti для потверждения токена через бд, но в данном проекте было принято решение не хранить токены и осоответсвующую информацию в бд, поэтому и jti ут нет
     return _create_token(
-        sub, ttl_minutes=settings.jwt.refresh_ttl_min, token_type="refresh")
-
+        sub, ttl_minutes=settings.jwt.refresh_ttl_min, token_type="refresh"
+    )
 
 
 def decode_token(token: str) -> dict:
