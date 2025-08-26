@@ -28,8 +28,12 @@ class AuthJWT(BaseModel):
     private_key_path: Path = PROJECT_ROOT / "app" / "certs" / "jwt-private.pem"
     public_key_path: Path = PROJECT_ROOT / "app" / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
-    access_ttl_min: int = 15
-    refresh_ttl_min: int = 60 * 24 * 30
+    access_ttl_min: int = 120
+    refresh_ttl_min: int = 120
+
+class CookieSettings(BaseModel):
+    secure: bool = True
+    samesite: str = "lax"
 
 
 class Settings(BaseSettings):
@@ -44,6 +48,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     db: DataConfig
     jwt: AuthJWT = AuthJWT()
+    cookies: CookieSettings = CookieSettings()
 
 
 settings = Settings()
