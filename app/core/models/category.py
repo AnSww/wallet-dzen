@@ -1,5 +1,5 @@
 from app.db import Base
-from sqlalchemy import String, Enum, ForeignKey, Boolean, UniqueConstraint
+from sqlalchemy import String, Enum, ForeignKey, Boolean, UniqueConstraint, Index, func
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.types import CategoryKind
@@ -20,3 +20,16 @@ class Category(UserRelationMixin, Base):
 
     parent: Mapped["Category | None"] = relationship(remote_side="Category.id")
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="category")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "name", "kind", name="uq__category__user_name_kind"
+        ),
+        Index(
+            "ux__category__user_kind_lower_name",
+            "user_id",
+            "kind",
+            func.lower(name),
+            unique=True,
+        ),
+    )
