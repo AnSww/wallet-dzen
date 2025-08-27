@@ -1,24 +1,39 @@
 services:
-
-  pg:
-    image: postgres
+  db:
+    image: postgres:16-alpine
+    container_name: wallet_db
     environment:
-      POSTGRES_DB: wallet
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-wallet}
+      POSTGRES_USER: ${POSTGRES_USER:-wallet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wallet}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wallet} -d ${POSTGRES_DB:-wallet}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
-  adminer:
-    image: adminer
-    ports:
-      - "8080:8080"
-
-  pgadmin:
-    image: dpage/pgadmin4
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wallet_app
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.org
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      APP_CONFIG__DB__URL: ${APP_CONFIG__DB__URL:-postgresql://wallet:wallet@db:5432/wallet}
+      APP_CONFIG__RUN__HOST: 0.0.0.0
+      WAIT_FOR_DB: "db:5432"
+      UVICORN_PORT: 8000
     ports:
-      - "5050:80"
+      - "8000:8000"
+    volumes:
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+
+volumes:
+  dbdata:

@@ -36,4 +36,4 @@ echo "Running Alembic migrations..."
 alembic upgrade head
 
 echo "Starting Uvicorn..."
-exec uvicorn app.main:app --host "${UVICORN_HOST:-0.0.0.0}" --port "${UVICORN_PORT:-8000}"
+exec uvicorn app.main:main_app --host "${UVICORN_HOST:-0.0.0.0}" --port "${UVICORN_PORT:-8000}"

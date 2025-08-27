@@ -9,7 +9,7 @@ from app.api.v1.routers.budget import router as budget_router
 from app.core.error_handler import http_exception_handler, unhandled_error_handler
 from app.db import Base, db_helper
 import uvicorn
-from core.config import settings
+from app.core.config import settings
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
