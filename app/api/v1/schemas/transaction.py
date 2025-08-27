@@ -10,8 +10,8 @@ Money = condecimal(gt=0, max_digits=14, decimal_places=2)
 
 
 class TransactionBase(BaseModel):
-    account_id: str
-    category_id: str | None = Field(default=None)
+    account_id: int
+    category_id: int | None = Field(default=None)
     direction: Direction
     amount: Money
     note: str | None = Field(default=None, max_length=500)
@@ -21,18 +21,18 @@ class TransactionCreate(TransactionBase):
     pass
 
 class TransactionUpdate(BaseModel):
-    account_id: str | None = None
-    category_id: str | None  = None
+    account_id: int | None = None
+    category_id: int | None  = None
     direction: Direction | None = None
     amount: Money | None = None
     note: str | None = Field(default=None, max_length=500)
     occurred_at: datetime | None = None
 
 class TransactionOut(BaseModel):
-    id: str
-    user_id: str
-    account_id: str
-    category_id: str | None
+    id: int
+    user_id: int
+    account_id: int
+    category_id: int | None
     direction: Direction
     amount: Decimal
     note: str | None

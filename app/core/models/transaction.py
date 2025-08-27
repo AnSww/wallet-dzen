@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from app.db import Base
-from sqlalchemy import String, Enum, ForeignKey, Boolean, UniqueConstraint, Numeric
+from sqlalchemy import String, Enum, ForeignKey, DateTime, Numeric, text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.types import Direction
@@ -25,7 +25,8 @@ class Transaction(UserRelationMixin, Base):
     )
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
-    occurred_at: Mapped[datetime] = mapped_column()  # клиент задаёт время операции
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),
+    server_default=text("TIMEZONE('UTC', NOW())"))
 
     account: Mapped["Account"] = relationship(back_populates="transactions")
     category: Mapped["Category | None"] = relationship(back_populates="transactions")
