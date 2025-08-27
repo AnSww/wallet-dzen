@@ -5,13 +5,24 @@ from fastapi import APIRouter, status, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth_depends import get_current_user
-from app.api.v1.schemas.transaction import TransactionOut, TransactionCreate, TransactionsPage, TransactionUpdate
+from app.api.v1.schemas.transaction import (
+    TransactionOut,
+    TransactionCreate,
+    TransactionsPage,
+    TransactionUpdate,
+)
 from app.db.db_helper import get_session
-from app.db.repositories.transaction_repo import TransactionRepository, NotFound, ValidationError, InsufficientFunds, \
-    Conflict
+from app.db.repositories.transaction_repo import (
+    TransactionRepository,
+    NotFound,
+    ValidationError,
+    InsufficientFunds,
+    Conflict,
+)
 from app.db.types import Direction
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
+
 
 @router.post("", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
@@ -39,8 +50,12 @@ async def create_transaction(
     except InsufficientFunds:
         raise HTTPException(
             status_code=409,
-            detail={"code": "INSUFFICIENT_FUNDS", "message": "not enough balance for this expense"}
+            detail={
+                "code": "INSUFFICIENT_FUNDS",
+                "message": "not enough balance for this expense",
+            },
         )
+
 
 @router.get("", response_model=TransactionsPage)
 async def list_transactions(
@@ -73,6 +88,7 @@ async def list_transactions(
     )
     return TransactionsPage(items=items, next_cursor=next_cursor)
 
+
 @router.get("/{tx_id}", response_model=TransactionOut)
 async def get_transaction(
     tx_id: int,
@@ -85,6 +101,7 @@ async def get_transaction(
         return tx
     except NotFound:
         raise HTTPException(status_code=404, detail="transaction not found")
+
 
 @router.patch("/{tx_id}", response_model=TransactionOut)
 async def update_transaction(
@@ -116,7 +133,10 @@ async def update_transaction(
     except InsufficientFunds:
         raise HTTPException(
             status_code=409,
-            detail={"code": "INSUFFICIENT_FUNDS", "message": "not enough balance for this change"}
+            detail={
+                "code": "INSUFFICIENT_FUNDS",
+                "message": "not enough balance for this change",
+            },
         )
 
 

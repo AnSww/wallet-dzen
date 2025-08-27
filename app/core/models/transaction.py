@@ -25,8 +25,9 @@ class Transaction(UserRelationMixin, Base):
     )
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
-    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),
-    server_default=text("TIMEZONE('UTC', NOW())"))
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=text("TIMEZONE('UTC', NOW())")
+    )
 
     account: Mapped["Account"] = relationship(back_populates="transactions")
     category: Mapped["Category | None"] = relationship(back_populates="transactions")

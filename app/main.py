@@ -5,6 +5,7 @@ from app.api.v1.routers.auth import router as auth_router
 from app.api.v1.routers.account import router as account_router
 from app.api.v1.routers.category import router as category_router
 from app.api.v1.routers.trancsaction import router as transaction_router
+from app.api.v1.routers.budget import router as budget_router
 from app.core.error_handler import http_exception_handler, unhandled_error_handler
 from app.db import Base, db_helper
 import uvicorn
@@ -29,6 +30,7 @@ main_app.include_router(auth_router)
 main_app.include_router(account_router)
 main_app.include_router(category_router)
 main_app.include_router(transaction_router)
+main_app.include_router(budget_router)
 
 
 if __name__ == "__main__":

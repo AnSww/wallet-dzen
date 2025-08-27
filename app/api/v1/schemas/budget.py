@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import condecimal, BaseModel, field_validator, Field
+from pydantic import condecimal, BaseModel, field_validator, Field, ConfigDict
 
 Money = condecimal(gt=0, max_digits=14, decimal_places=2)
 
@@ -43,13 +43,14 @@ class BudgetUpdate(BaseModel):
         return _month_floor(v)
 
 
-class BudgetOut(BudgetBase):
-    budget_id: int
+class BudgetOut(BaseModel):
+    budget_id: int = Field(..., alias="id")
     user_id: int
+    category_id: int
+    month: date
+    amount: Decimal
 
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class BudgetFactItem(BaseModel):

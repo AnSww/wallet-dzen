@@ -17,16 +17,19 @@ class TransactionBase(BaseModel):
     note: str | None = Field(default=None, max_length=500)
     occurred_at: datetime
 
+
 class TransactionCreate(TransactionBase):
     pass
 
+
 class TransactionUpdate(BaseModel):
     account_id: int | None = None
-    category_id: int | None  = None
+    category_id: int | None = None
     direction: Direction | None = None
     amount: Money | None = None
     note: str | None = Field(default=None, max_length=500)
     occurred_at: datetime | None = None
+
 
 class TransactionOut(BaseModel):
     id: int
@@ -41,6 +44,7 @@ class TransactionOut(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class TransactionsPage(BaseModel):
     items: list[TransactionOut]

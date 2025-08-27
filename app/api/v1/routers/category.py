@@ -29,7 +29,6 @@ async def _ensure_parent_valid(
     return parent
 
 
-
 @router.post(
     "",
     response_model=CategoryOut,

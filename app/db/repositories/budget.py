@@ -7,8 +7,15 @@ from sqlalchemy import select, delete, literal_column, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from app.core.models import Budget, User, Transaction
-from app.db.types import Direction
+from app.core.models import Budget, User, Transaction, Category
+
+
+try:
+    from app.db.types import Direction
+
+    OUT = Direction.outgoing
+except Exception:
+    OUT = "out"
 
 
 @dataclass
@@ -21,50 +28,49 @@ class BudgetRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id_owned(self, *, user_id: int, budget_id: int) -> Budget | None:
+    @staticmethod
+    def _first_of_month(m: date) -> date:
+        return m.replace(day=1)
+
+    # --- CRUD ---
+    async def get_owned(self, *, user_id: int, budget_id: int) -> Budget | None:
         stmt = select(Budget).where(Budget.id == budget_id, Budget.user_id == user_id)
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
-    async def list_month_plans(self, *, user_id: int, month: date) -> list[Budget]:
-        month = month.replace(day=1)
-        stmt = (
-            select(Budget)
-            .where(Budget.user_id == user_id, Budget.month == month)
-            .order_by(Budget.category_id.asc())
-        )
-        res = await self.session.execute(stmt)
-        return list(res.scalars())
-
     async def create(
-        self, *, user: User, category_id: int, amount: Decimal, month: date
+        self, *, user_id: int, category_id: int, amount: Decimal, month: date
     ) -> Budget:
         obj = Budget(
-            user_id=user.id,
+            user_id=user_id,
             category_id=category_id,
             amount=amount,
-            month=month.replace(day=1),
+            month=self._first_of_month(month),
         )
         self.session.add(obj)
         await self.session.flush()
         return obj
 
-    async def patch(
+    async def patch_owned(
         self,
         *,
-        budget: Budget,
+        user_id: int,
+        budget_id: int,
         category_id: int | None = None,
         amount: Decimal | None = None,
         month: date | None = None,
-    ) -> Budget:
+    ) -> Budget | None:
+        obj = await self.get_owned(user_id=user_id, budget_id=budget_id)
+        if not obj:
+            return None
         if category_id is not None:
-            budget.category_id = category_id
+            obj.category_id = category_id
         if amount is not None:
-            budget.amount = amount
+            obj.amount = amount
         if month is not None:
-            budget.month = month.replace(day=1)
+            obj.month = self._first_of_month(month)
         await self.session.flush()
-        return budget
+        return obj
 
     async def delete_owned(self, *, user_id: int, budget_id: int) -> int:
         stmt = (
@@ -75,22 +81,51 @@ class BudgetRepository:
         res = await self.session.execute(stmt)
         return len(res.fetchall())
 
+    async def list_month_plans(self, *, user_id: int, month: date) -> list[Budget]:
+        m = self._first_of_month(month)
+        stmt = (
+            select(Budget)
+            .where(Budget.user_id == user_id, Budget.month == m)
+            .order_by(Budget.category_id.asc())
+        )
+        res = await self.session.execute(stmt)
+        return list(res.scalars())
+
+    # --- Валидация категорий (расходные и принадлежат юзеру) ---
+    async def validate_expense_categories(
+        self, *, user_id: int, category_ids: list[int]
+    ) -> None:
+        if not category_ids:
+            return
+        q = select(Category.id, Category.kind).where(
+            Category.user_id == user_id,
+            Category.id.in_(category_ids),
+        )
+        res = await self.session.execute(q)
+        found = {cid: kind for cid, kind in res.all()}
+        missing = [cid for cid in category_ids if cid not in found]
+        if missing:
+            raise ValueError(f"categories_not_found: {missing}")
+
+        wrong = [
+            cid for cid, kind in found.items() if str(kind).split(".")[-1] != "expense"
+        ]
+        if wrong:
+            raise ValueError(f"categories_not_expense: {wrong}")
+
+    # --- Upsert набора бюджетов за месяц ---
     async def bulk_upsert_month(
         self, *, user_id: int, month: date, items: Iterable[BudgetUpsertItem]
     ) -> None:
-        """
-        Вставка/обновление по уникальному ключу (user_id, month, category_id).
-        Требует уникального индекса в БД.
-        """
-        month = month.replace(day=1)
+        m = self._first_of_month(month)
         rows = [
             {
                 "user_id": user_id,
-                "category_id": it.category_id,
-                "month": month,
-                "amount": it.amount,
+                "category_id": i.category_id,
+                "month": m,
+                "amount": i.amount,
             }
-            for it in items
+            for i in items
         ]
         if not rows:
             return
@@ -104,43 +139,67 @@ class BudgetRepository:
         )
         await self.session.execute(stmt)
 
-    # --- агрегации ---
-
     async def month_actuals_by_category(
         self, *, user_id: int, month: date, account_id: int | None = None
     ) -> dict[int, Decimal]:
-        """
-        Факт расходов (direction='out') за месяц по категориям.
-        Возвращает {category_id: actual_sum}.
-        """
-        month = month.replace(day=1)
-        month_next = (month.replace(day=28) + timedelta(days=4)).replace(
-            day=1
-        )  # первое число след. месяца
-
-        where = [
+        m = self._first_of_month(month)
+        m_next = (m.replace(day=28) + timedelta(days=4)).replace(day=1)
+        conds = [
             Transaction.user_id == user_id,
-            (
-                Transaction.direction == Direction.outgoing
-                if hasattr(Direction, "outgoing")
-                else "out"
-            ),
-            Transaction.occurred_at >= month,
-            Transaction.occurred_at < month_next,
+            Transaction.direction == OUT,
+            Transaction.occurred_at >= m,
+            Transaction.occurred_at < m_next,
         ]
         if account_id is not None:
-            where.append(Transaction.account_id == account_id)
+            conds.append(Transaction.account_id == account_id)
 
         stmt = (
             select(
                 Transaction.category_id, func.coalesce(func.sum(Transaction.amount), 0)
             )
-            .where(and_(*where))
+            .where(and_(*conds))
             .group_by(Transaction.category_id)
         )
         res = await self.session.execute(stmt)
-        out: dict[int, Decimal] = {}
+        data: dict[int, Decimal] = {}
         for cat_id, total in res.all():
             if cat_id is not None:
-                out[int(cat_id)] = Decimal(total)
-        return out
+                data[int(cat_id)] = Decimal(total)
+        return data
+
+    async def build_month_response(
+        self, *, user_id: int, month: date, account_id: int | None = None
+    ) -> dict:
+        plans = await self.list_month_plans(user_id=user_id, month=month)
+        actuals = await self.month_actuals_by_category(
+            user_id=user_id, month=month, account_id=account_id
+        )
+
+        items: list[dict] = []
+        total_planned = Decimal("0.00")
+        total_actual = Decimal("0.00")
+
+        for p in plans:
+            planned = Decimal(p.amount)
+            actual = Decimal(actuals.get(p.category_id, Decimal("0")))
+            delta = planned - actual
+            items.append(
+                {
+                    "category_id": p.category_id,
+                    "planned": planned,
+                    "actual": actual,
+                    "delta": delta,
+                }
+            )
+            total_planned += planned
+            total_actual += actual
+
+        return {
+            "month": self._first_of_month(month),
+            "items": items,
+            "totals": {
+                "planned": total_planned,
+                "actual": total_actual,
+                "delta": total_planned - total_actual,
+            },
+        }
